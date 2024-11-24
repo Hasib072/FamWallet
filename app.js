@@ -23,10 +23,10 @@ app.get('/', (req, res) => {
   res.send('FamWallet Backend API is running');
 });
 
-// Define routes
-// Example: app.use('/api/users', require('./routes/userRoutes'));
+// Define user routes
+app.use('/api/users', require('./routes/userRoutes'));
 
-// Set up the server to listen on the specified port
+// Start the server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
