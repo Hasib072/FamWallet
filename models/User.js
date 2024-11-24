@@ -14,4 +14,8 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Create indexes
+UserSchema.index({ email: 1 });
+UserSchema.index({ mobileNumber: 1 });
+
 module.exports = mongoose.model('User', UserSchema);
