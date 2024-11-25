@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 const auth = require('../middleware/auth');
 const familyController = require('../controllers/familyController');
 
@@ -28,7 +28,24 @@ router.post(
   [
     auth,
     [
-      check('email', 'Valid email is required to add member').isEmail(),
+      // At least one of email or mobileNumber must be provided
+      body().custom(body => {
+        if (!body.email && !body.mobileNumber) {
+          throw new Error('Either email or mobileNumber must be provided to add a member');
+        }
+        return true;
+      }),
+      // If email is provided, it must be valid
+      check('email')
+        .optional()
+        .isEmail()
+        .withMessage('Please provide a valid email address'),
+      // If mobileNumber is provided, it must be valid
+      check('mobileNumber')
+        .optional()
+        .isMobilePhone()
+        .withMessage('Please provide a valid mobile number'),
+      // Additional validations can be added here
     ],
   ],
   familyController.addMember

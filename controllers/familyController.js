@@ -40,9 +40,14 @@ exports.createFamily = async (req, res) => {
 // @access  Private
 exports.addMember = async (req, res) => {
   const { familyId } = req.params;
-  const { email } = req.body; // Email of the user to add
+  const { email, mobileNumber } = req.body; // Either email or mobileNumber should be provided
 
   try {
+    // Validate that at least one identifier is provided
+    if (!email && !mobileNumber) {
+      return res.status(400).json({ message: 'Either email or mobileNumber must be provided to add a member' });
+    }
+
     // Find the family
     const family = await Family.findById(familyId);
     if (!family) {
@@ -55,10 +60,19 @@ exports.addMember = async (req, res) => {
       return res.status(403).json({ message: 'Only Admins can add members' });
     }
 
-    // Find the user by email
-    const userToAdd = await User.findOne({ email });
+    // Build query based on provided identifier
+    const query = {};
+    if (email) {
+      query.email = email;
+    }
+    if (mobileNumber) {
+      query.mobileNumber = mobileNumber;
+    }
+
+    // Find the user by email or mobileNumber
+    const userToAdd = await User.findOne(query);
     if (!userToAdd) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found with the provided email or mobile number' });
     }
 
     // Check if user is already a member
