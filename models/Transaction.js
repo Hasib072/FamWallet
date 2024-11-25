@@ -4,14 +4,14 @@ const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  family: { type: mongoose.Schema.Types.ObjectId, ref: 'Family' }, // Optional
+  family: { type: mongoose.Schema.Types.ObjectId, ref: 'Family' },
   date: { type: Date, required: true },
   type: { type: String, enum: ['Credit', 'Debit'], required: true },
   category: { type: String, required: true },
-  subCategory: { type: String }, // Optional for more detailed tracking
+  subCategory: { type: String },
   amount: { type: Number, required: true },
   mode: { type: String, enum: ['Cash', 'Bank', 'Credit Card'], required: true },
-  description: { type: String }, // Optional
+  description: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

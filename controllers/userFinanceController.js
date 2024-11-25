@@ -8,6 +8,7 @@ const User = require('../models/User');
 // @route   GET /api/finance
 // @access  Private
 exports.getUserFinance = async (req, res) => {
+  console.log("Inside User Finance");  
   try {
     const userFinance = await UserFinance.findOne({ user: req.user.id }).populate('user', ['name', 'email']);
     if (!userFinance) {
