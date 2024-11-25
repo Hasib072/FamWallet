@@ -11,6 +11,11 @@ const TransactionSchema = new mongoose.Schema({
   subCategory: { type: String },
   amount: { type: Number, required: true },
   mode: { type: String, enum: ['Cash', 'Bank', 'Credit Card'], required: true },
+  
+  // New Fields
+  accountName: { type: String },       // For 'Bank' mode
+  creditCardName: { type: String },    // For 'Credit Card' mode
+  
   description: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
