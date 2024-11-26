@@ -315,7 +315,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.fullWidthRow}>
             <View style={styles.fullWidthCard}>
-              <Text style={styles.accountName}>₹{userFinance.cashAmount.toFixed(2)}</Text>
+              <Text style={styles.cashAccountBalance}>₹{userFinance.cashAmount.toFixed(2)}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -386,7 +386,7 @@ export default function HomeScreen() {
                   accessibilityLabel={`Edit ${card.name}`}
                 >
                   <Text style={styles.accountName}>{card.name}</Text>
-                  <Text style={styles.accountBalance}>₹{card.balance.toFixed(2)}</Text>
+                  <Text style={styles.negetiveAccountBalance}>₹{card.balance.toFixed(2)}</Text>
                   {/* <Text style={styles.accountLimit}>Limit: ₹{card.limit.toFixed(2)}</Text> */}
                 </TouchableOpacity>
               ))}
@@ -559,9 +559,19 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     color: '#333',
   },
+  cashAccountBalance: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginVertical: 5,
+    color: '#1d8e3d',
+  },
   accountBalance: {
     fontSize: 14,
-    color: '#555',
+    color: '#1d8e3d',
+  },
+  negetiveAccountBalance: {
+    fontSize: 14,
+    color: '#f53f5b',
   },
   accountLimit: {
     fontSize: 14,
