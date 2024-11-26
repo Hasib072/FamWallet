@@ -51,6 +51,8 @@ export default function HomeScreen() {
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`
       );
       setUserFinance(response.data);
+      console.log(response.data);
+      
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
         // UserFinance does not exist, initialize with default values

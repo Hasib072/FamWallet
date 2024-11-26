@@ -29,10 +29,10 @@ exports.getUserFinance = async (req, res) => {
 // @access  Private
 exports.updateUserFinance = async (req, res) => {
   // Validate incoming data
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  // const errors = validationResult(req);
+  // if (!errors.isEmpty()) {
+  //   return res.status(400).json({ errors: errors.array() });
+  // }
   
   const { monthlyIncome, bankAccounts, cashAmount, creditCards, savingGoals, loans } = req.body;
 
