@@ -10,13 +10,20 @@ const User = require('../models/User');
 exports.getUserFinance = async (req, res) => {
   console.log("Inside User Finance");  
   try {
-    const userFinance = await UserFinance.findOne({ user: req.user.id }).populate('user', ['name', 'email']);
+    // Attempt to find the UserFinance document for the authenticated user
+    let userFinance = await UserFinance.findOne({ user: req.user.id }).populate('user', ['name', 'email']);
+    
     if (!userFinance) {
-      return res.status(404).json({ message: 'User finance details not found' });
+      // If not found, create a new UserFinance with default values
+      userFinance = new UserFinance({ user: req.user.id });
+      await userFinance.save();
+      console.log("Created new UserFinance document for user:", req.user.id);
     }
+    
+    // Return the UserFinance document (existing or newly created)
     res.status(200).json(userFinance);
   } catch (err) {
-    console.error('Error fetching user finance:', err.message);
+    console.error('Error fetching or creating user finance:', err.message);
     res.status(500).send('Server error');
   }
 };
