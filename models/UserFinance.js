@@ -1,77 +1,42 @@
-// controllers/userFinanceController.js
+// models/UserFinance.js
 
-const { validationResult } = require('express-validator');
-const UserFinance = require('../models/UserFinance');
-const User = require('../models/User');
+const mongoose = require('mongoose');
 
-// @desc    Get user's financial details
-// @route   GET /api/finance
-// @access  Private
-exports.getUserFinance = async (req, res) => {
-  console.log("Inside User Finance");  
-  try {
-    // Attempt to find the UserFinance document for the authenticated user
-    let userFinance = await UserFinance.findOne({ user: req.user.id }).populate('user', ['name', 'email']);
-    
-    if (!userFinance) {
-      // If not found, create a new UserFinance with default values
-      userFinance = new UserFinance({ user: req.user.id });
-      await userFinance.save();
-      console.log("Created new UserFinance document for user:", req.user.id);
-    }
-    
-    // Return the UserFinance document (existing or newly created)
-    res.status(200).json(userFinance);
-  } catch (err) {
-    console.error('Error fetching or creating user finance:', err.message);
-    res.status(500).send('Server error');
-  }
-};
+const UserFinanceSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  monthlyIncome: { type: Number, default: 0 },
+  bankAccounts: [
+    {
+      name: { type: String },
+      balance: { type: Number, default: 0 },
+    },
+  ],
+  cashAmount: { type: Number, default: 0 },
+  creditCards: [
+    {
+      name: { type: String },
+      limit: { type: Number },
+      balance: { type: Number, default: 0 },
+    },
+  ],
+  savingGoals: [
+    {
+      name: { type: String },
+      targetAmount: { type: Number },
+      currentAmount: { type: Number, default: 0 },
+      deadline: { type: Date },
+    },
+  ],
+  loans: [
+    {
+      name: { type: String },
+      principalAmount: { type: Number },
+      interestRate: { type: Number },
+      monthlyPayment: { type: Number },
+      remainingBalance: { type: Number },
+    },
+  ],
+  createdAt: { type: Date, default: Date.now },
+});
 
-// @desc    Update user's financial details
-// @route   PUT /api/finance
-// @access  Private
-exports.updateUserFinance = async (req, res) => {
-  // Validate incoming data
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  
-  const { monthlyIncome, bankAccounts, cashAmount, creditCards, savingGoals, loans } = req.body;
-
-  // Build the update object
-  const financeFields = {};
-  if (monthlyIncome !== undefined) financeFields.monthlyIncome = monthlyIncome;
-  if (bankAccounts !== undefined) financeFields.bankAccounts = bankAccounts;
-  if (cashAmount !== undefined) financeFields.cashAmount = cashAmount;
-  if (creditCards !== undefined) financeFields.creditCards = creditCards;
-  if (savingGoals !== undefined) financeFields.savingGoals = savingGoals;
-  if (loans !== undefined) financeFields.loans = loans;
-
-  try {
-    let userFinance = await UserFinance.findOne({ user: req.user.id });
-
-    if (userFinance) {
-      // Update existing UserFinance
-      userFinance = await UserFinance.findOneAndUpdate(
-        { user: req.user.id },
-        { $set: financeFields },
-        { new: true }
-      );
-      return res.status(200).json(userFinance);
-    }
-
-    // Create new UserFinance if it doesn't exist
-    userFinance = new UserFinance({
-      user: req.user.id,
-      ...financeFields,
-    });
-
-    await userFinance.save();
-    res.status(201).json(userFinance);
-  } catch (err) {
-    console.error('Error updating user finance:', err.message);
-    res.status(500).send('Server error');
-  }
-};
+module.exports = mongoose.model('UserFinance', UserFinanceSchema);
