@@ -8,7 +8,6 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
-  FlatList,
   Text,
 } from 'react-native';
 import { AuthContext } from './context/AuthContext';
@@ -111,11 +110,11 @@ export default function HomeScreen() {
   const fetchPersonalTransactions = async () => {
     setPersonalTransactionsLoading(true);
     try {
-
       const response = await axios.get<Transaction[]>(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${user?._id}`
-      );      
+      );
       setPersonalTransactions(response.data);
+      console.log('Personal Transactions:', response.data);
     } catch (err: any) {
       console.log('!Error fetching personal transactions:', err.message);
       Alert.alert('Error', 'Failed to fetch personal transactions!');
@@ -485,5 +484,5 @@ const styles = StyleSheet.create({
     // Optional: Add elevation for Android
     elevation: 5,
   },
-  // Transaction Styles (if any)
+  // Add other styles as needed
 });

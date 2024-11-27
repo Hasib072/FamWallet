@@ -35,4 +35,9 @@ router.put(
   userFinanceController.updateUserFinance
 );
 
+// @route   GET /api/users/:id/finance
+// @desc    Get a specific user's financial details by userId (only family members can access)
+// @access  Private
+router.get('/users/:id/finance', auth, userFinanceController.getUserFinanceById);
+
 module.exports = router;

@@ -36,7 +36,9 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
     setLoading(true);
     setError(null);
     try {
-      console.log(`Requesting !!! ${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${userId}?limit=${limit}`)
+      console.log(
+        `Requesting !!! ${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${userId}?limit=${limit}`
+      );
       const response = await axios.get<Transaction[]>(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${userId}?limit=${limit}`
       );
@@ -60,7 +62,6 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
       >
         <View style={styles.transactionInfo}>
           <Text style={styles.transactionType}>{item.category}</Text>
-          {/* <Text style={styles.transactionCategory}>{item.subCategory}</Text> */}
           <Text style={styles.transactionDate}>
             {format(new Date(item.date), 'dd MMM yyyy')}
           </Text>
@@ -70,7 +71,6 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
             ₹{item.amount.toFixed(2)}
           </Text>
           <Text style={styles.transactionMode}>{item.mode}</Text>
-          
         </View>
       </View>
     );
@@ -106,16 +106,15 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
 
   return (
     <View style={styles.container}>
-      
       <View style={styles.transactionHead}>
-      <Text style={styles.sectionTitle}>Recent Transactions</Text>
-      <TouchableOpacity
-        style={styles.viewAllButton}
-        onPress={handleNavigateToTransactions}
-        accessibilityLabel="View All Transactions"
-      >
-        <Text style={styles.viewAllText}>View All</Text>
-      </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={handleNavigateToTransactions}
+          accessibilityLabel="View All Transactions"
+        >
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={transactions}
@@ -124,6 +123,7 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        scrollEnabled={false} // Disable inner scrolling
       />
     </View>
   );
@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     width: 200,
-    
   },
   listContent: {
     paddingRight: 20,
@@ -164,12 +163,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#155724',
-    width: 150
+    width: 150,
   },
   transactionCategory: {
     fontSize: 14,
     color: '#155724',
-    width: 50
+    width: 50,
   },
   transactionDetails: {
     flexDirection: 'row',
