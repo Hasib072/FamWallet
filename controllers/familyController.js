@@ -141,3 +141,39 @@ exports.getFamilyMembers = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+
+// @desc    Get familie that a user belongs to
+// @route   GET /api/families/user/:userId
+// @access  Private
+exports.getFamiliesByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Verify that the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Optional: Check if the requester is an Admin or the user themselves
+    // Assuming you have roles defined in your User model
+    if (req.user.role !== 'Admin' && req.user.id !== userId) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Find all families where the user is a member
+    const families = await Family.find({ 'members.user': userId })
+      .populate('members.user', ['name', 'email', 'mobileNumber'])
+      .populate('createdBy', ['name', 'email']);
+
+    if (families.length === 0) {
+      return res.status(404).json({ message: 'No families found for this user' });
+    }
+
+    res.status(200).json({ families });
+  } catch (err) {
+    console.error('Error fetching families by user ID:', err.message);
+    res.status(500).send('Server error');
+  }
+};
