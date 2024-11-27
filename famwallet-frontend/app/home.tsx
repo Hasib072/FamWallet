@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { AuthContext } from './context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -21,6 +22,9 @@ import AccountSection from './components/AccountSection';
 import TransactionCardSection from './components/TransactionCardSection'; // New import
 import CashEditModal from './components/CashEditModal';
 import AccountEditModal from './components/AccountEditModal';
+
+// Import Ionicons from @expo/vector-icons
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const { user, logout, fetchUser, loading } = useContext(AuthContext);
@@ -303,53 +307,69 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Header with Logout Icon and Toggle Tabs */}
-      <Header
-        userName={user.name}
-        onLogout={handleLogout}
-        currentTab={currentTab}
-        onToggleTab={handleToggleTab}
-      />
-
-      {/* User Details Card */}
-      <View style={styles.card}>
-        {/* Cash Section */}
-        <CashSection
-          cashAmount={userFinance.cashAmount}
-          onPress={() => {
-            setNewCashAmount(userFinance.cashAmount.toString());
-            setIsCashModalVisible(true);
-          }}
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* Header with Logout Icon and Toggle Tabs */}
+        <Header
+          userName={user.name}
+          onLogout={handleLogout}
+          currentTab={currentTab}
+          onToggleTab={handleToggleTab}
         />
 
-        {/* Bank Accounts Section */}
-        <AccountSection
-          title="Bank Accounts"
-          accounts={userFinance.bankAccounts}
-          onAdd={() => router.push('/addBankAccount')}
-          onEdit={(type, index) => {
-            setSelectedAccount({ type, index });
-            setEditedAccountBalance(userFinance.bankAccounts[index].balance.toString());
-            setIsEditAccountModalVisible(true);
-          }}
-          type="bank"
-        />
+        {/* User Details Card */}
+        <View style={styles.card}>
+          {/* Cash Section */}
+          <CashSection
+            cashAmount={userFinance.cashAmount}
+            onPress={() => {
+              setNewCashAmount(userFinance.cashAmount.toString());
+              setIsCashModalVisible(true);
+            }}
+          />
 
-        {/* Credit Cards Section */}
-        <AccountSection
-          title="Credit Cards"
-          accounts={userFinance.creditCards}
-          onAdd={() => router.push('/addCreditCard')}
-          onEdit={(type, index) => {
-            setSelectedAccount({ type, index });
-            setEditedAccountBalance(userFinance.creditCards[index].balance.toString());
-            setEditedCreditLimit(userFinance.creditCards[index].limit.toString());
-            setIsEditAccountModalVisible(true);
-          }}
-          type="credit"
-        />
-      </View>
+          {/* Bank Accounts Section */}
+          <AccountSection
+            title="Bank Accounts"
+            accounts={userFinance.bankAccounts}
+            onAdd={() => router.push('/addBankAccount')}
+            onEdit={(type, index) => {
+              setSelectedAccount({ type, index });
+              setEditedAccountBalance(userFinance.bankAccounts[index].balance.toString());
+              setIsEditAccountModalVisible(true);
+            }}
+            type="bank"
+          />
+
+          {/* Credit Cards Section */}
+          <AccountSection
+            title="Credit Cards"
+            accounts={userFinance.creditCards}
+            onAdd={() => router.push('/addCreditCard')}
+            onEdit={(type, index) => {
+              setSelectedAccount({ type, index });
+              setEditedAccountBalance(userFinance.creditCards[index].balance.toString());
+              setEditedCreditLimit(userFinance.creditCards[index].limit.toString());
+              setIsEditAccountModalVisible(true);
+            }}
+            type="credit"
+          />
+        </View>
+
+        {/* Transaction Card Section - Only in Personal Tab */}
+        {currentTab === 'Personal' && (
+          <TransactionCardSection userId={user._id} limit={5} />
+        )}
+      </ScrollView>
+
+      {/* Floating Add Button */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => router.push('/addtransaction')}
+        accessibilityLabel="Add Transaction"
+      >
+        <Ionicons name="add-circle" size={60} color="#1d8e3d" />
+      </TouchableOpacity>
 
       {/* Cash Edit Modal */}
       <CashEditModal
@@ -376,12 +396,7 @@ export default function HomeScreen() {
           setEditedCreditLimit('');
         }}
       />
-
-      {/* Transaction Card Section - Only in Personal Tab */}
-      {currentTab === 'Personal' && (
-          <TransactionCardSection userId={user._id} limit={5} />
-        )}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -405,5 +420,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // For iOS shadow
     shadowOpacity: 0.1, // For iOS shadow
     shadowRadius: 5, // For iOS shadow
+    marginBottom: 20,
+  },
+  floatingButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 30,
+    // Optional: Add shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3.84,
+    // Optional: Add elevation for Android
+    elevation: 5,
   },
 });

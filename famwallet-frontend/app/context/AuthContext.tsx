@@ -81,9 +81,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/users/profile`);
       setUser(response.data);
     } catch (error) {
-      console.log('Failed to fetch user:', error);
+      console.log('Logging out Failed to fetch user:', error);
       //Alert.alert('Error', 'Failed to fetch user data. Please log in again.');
-      //logout();
+      logout();
+      console.log("User Logged out!")
     }
   };
 
