@@ -1,4 +1,4 @@
-// components/CreateFamily.tsx
+// app/components/CreateFamily.tsx
 
 import React, { useState, useContext } from 'react';
 import {
@@ -15,7 +15,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native'; // Adjust based on your navigation setup
 
 const CreateFamily = () => {
-  const { user, token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // Removed 'token' as it's not needed
   const navigation = useNavigation();
   const [familyName, setFamilyName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,7 +30,12 @@ const CreateFamily = () => {
     try {
       const response = await axios.post(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/families`,
-        { name: familyName }
+        { name: familyName },
+        {
+          headers: {
+            'Content-Type': 'application/json', // Retained if backend expects JSON
+          },
+        }
       );
 
       Alert.alert('Success', 'Family created successfully.');

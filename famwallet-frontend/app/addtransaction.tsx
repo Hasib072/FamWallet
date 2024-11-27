@@ -10,17 +10,48 @@ import {
   Alert,
   ScrollView,
   Platform,
+  ActivityIndicator, // Import ActivityIndicator for loading states
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useRouter, useNavigation } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList, AddTransactionRouteProp, AddTransactionNavigationProp } from './types/navigation';
 import { AuthContext } from './context/AuthContext';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
+interface Family {
+    _id: string;
+    name: string;
+    members: {
+      user: {
+        _id: string; // Ensure member.user is an object with _id
+        name: string;
+        email: string;
+        // Add other user fields as necessary
+      };
+      role: 'Admin' | 'Member';
+    }[];
+  }
+
+// Define the navigation prop type
+type AddTransactionProps = {
+  navigation: AddTransactionNavigationProp;
+  route: AddTransactionRouteProp;
+};
+
 export default function AddTransaction() {
   const { user } = useContext(AuthContext);
-  const router = useRouter();
-  const navigation = useNavigation();
+  const navigation = useNavigation<AddTransactionNavigationProp>();
+  const route = useRoute<AddTransactionRouteProp>();
+
+  // Extract familyId from route params if passed
+  const passedFamilyId = route.params?.familyId;
+
+  // State to store fetched familyId
+  const [familyId, setFamilyId] = useState<string | null>(passedFamilyId || null);
+  const [familyLoading, setFamilyLoading] = useState<boolean>(false);
+  const [familyError, setFamilyError] = useState<string | null>(null);
 
   // Disable the default header
   useLayoutEffect(() => {
@@ -38,9 +69,43 @@ export default function AddTransaction() {
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [subCategoryOptions, setSubCategoryOptions] = useState<string[]>([]);
 
-  // New state for Credit Card Names
+  // State for Credit Card Names
   const [creditCardOptions, setCreditCardOptions] = useState<string[]>([]);
   const [creditCardName, setCreditCardName] = useState<string>('');
+
+  // Fetch family data if not passed via navigation params
+  useEffect(() => {
+    if (user && !familyId) {
+      fetchFamily();
+    }
+  }, [user]);
+
+  const fetchFamily = async () => {
+    setFamilyLoading(true);
+    setFamilyError(null);
+    try {
+      const response = await axios.get(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/families/user/${user._id}`
+      );
+
+      const families: Family[] = response.data.families;
+      const userFamily = families[0];
+
+
+      console.log("The response: ",userFamily._id)
+      if (userFamily._id) {
+        setFamilyId(userFamily._id);
+      } else {
+        setFamilyId(null);
+      }
+    } catch (err: any) {
+      console.error('Error fetching family data:', err.message);
+      setFamilyError('Failed to fetch family data.');
+      setFamilyId(null);
+    } finally {
+      setFamilyLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -123,6 +188,9 @@ export default function AddTransaction() {
       return;
     }
 
+    // Optionally, show a loading indicator during submission
+    Alert.alert('Submitting', 'Please wait while we add your transaction.');
+
     try {
       // Construct transactionData
       const transactionData: any = {
@@ -140,11 +208,10 @@ export default function AddTransaction() {
         description,
       };
 
-      // Conditionally include familyId if available (assuming you have it in context or state)
-      // Example:
-      // if (familyId) {
-      //   transactionData.familyId = familyId;
-      // }
+      // Include familyId if present
+      if (familyId) {
+        transactionData.familyId = familyId;
+      }
 
       // Handle account-specific fields
       if (accountType === 'Bank') {
@@ -153,19 +220,13 @@ export default function AddTransaction() {
         transactionData.creditCardName = creditCardName;
       }
 
-      // Remove familyId if it's null or undefined
-      // Assuming you have a `familyId` state or prop, replace `null` accordingly
-      // For example:
-      // const familyId = user.familyId || null;
-      // if (familyId) {
-      //   transactionData.familyId = familyId;
-      // }
+      console.log('!!! Transaction DATA', transactionData);
+      console.log('Family ID:', familyId);
 
-      console.log(transactionData);
       await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions`, transactionData);
 
       Alert.alert('Success', 'Transaction added successfully.');
-      router.back();
+      navigation.goBack(); // Navigate back after successful submission
     } catch (err: any) {
       console.error('Error adding transaction:', err);
       // Enhanced error handling
@@ -182,11 +243,31 @@ export default function AddTransaction() {
     }
   };
 
+  if (familyLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#1d8e3d" />
+        <Text>Loading family data...</Text>
+      </View>
+    );
+  }
+
+  if (familyError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{familyError}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchFamily}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} accessibilityLabel="Go Back">
+        <TouchableOpacity onPress={() => navigation.goBack()} accessibilityLabel="Go Back">
           <Ionicons name="arrow-back" size={24} color="#1d8e3d" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Transaction</Text>
@@ -516,6 +597,37 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f2f2f2',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f2f2f2',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#dc3545',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#1d8e3d',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  retryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

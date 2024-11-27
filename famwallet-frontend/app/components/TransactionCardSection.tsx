@@ -123,7 +123,7 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        scrollEnabled={false} // Disable inner scrolling
+        scrollEnabled={true} // Disable inner scrolling
       />
     </View>
   );
