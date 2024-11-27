@@ -16,5 +16,6 @@ const FamilySchema = new mongoose.Schema({
 
 // Create indexes
 FamilySchema.index({ createdBy: 1 });
+FamilySchema.index({ 'members.user': 1 });
 
 module.exports = mongoose.model('Family', FamilySchema);
