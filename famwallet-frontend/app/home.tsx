@@ -111,11 +111,7 @@ export default function HomeScreen() {
         cashAmount: parsedAmount,
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
       setUserFinance(updatedFinance);
       setIsCashModalVisible(false);
       // No success alert as per your request
@@ -159,11 +155,7 @@ export default function HomeScreen() {
         }
       }
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
       setUserFinance(updatedFinance);
       setIsEditAccountModalVisible(false);
       setSelectedAccount(null);
@@ -199,15 +191,11 @@ export default function HomeScreen() {
                 updatedFinance.creditCards.splice(index, 1);
               }
 
-              await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
-                headers: {
-                  Authorization: `Bearer ${user.token}`,
-                },
-              });
+              await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
               setUserFinance(updatedFinance);
               setIsEditAccountModalVisible(false);
               setSelectedAccount(null);
-              // No success alert as per your request
+              
             } catch (err: any) {
               console.error('Error deleting account:', err.message);
               Alert.alert('Error', 'Failed to delete account.');
@@ -237,11 +225,7 @@ export default function HomeScreen() {
         bankAccounts: [...userFinance.bankAccounts, { name, balance }],
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
       setUserFinance(updatedFinance);
       // Fetch the updated data again
       await fetchUserFinance();
@@ -271,11 +255,7 @@ export default function HomeScreen() {
         creditCards: [...userFinance.creditCards, { name, limit, balance }],
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
       setUserFinance(updatedFinance);
       // Fetch the updated data again
       await fetchUserFinance();
