@@ -18,6 +18,7 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 import Header from './components/Header';
 import CashSection from './components/CashSection';
 import AccountSection from './components/AccountSection';
+import TransactionCardSection from './components/TransactionCardSection'; // New import
 import CashEditModal from './components/CashEditModal';
 import AccountEditModal from './components/AccountEditModal';
 
@@ -25,6 +26,14 @@ export default function HomeScreen() {
   const { user, logout, fetchUser, loading } = useContext(AuthContext);
   const router = useRouter();
 
+  // New state for managing the active tab
+  const [currentTab, setCurrentTab] = useState<'Personal' | 'Family'>('Personal');
+
+  const handleToggleTab = (tab: 'Personal' | 'Family') => {
+    setCurrentTab(tab);
+    // Optionally, perform additional actions based on the selected tab
+    // For example, fetch different data or navigate to different sections
+  };
 
   // Initialize userFinance with default values
   const [userFinance, setUserFinance] = useState<UserFinance>({
@@ -52,15 +61,23 @@ export default function HomeScreen() {
 
   // Function to fetch UserFinance data
   const fetchUserFinance = async () => {
-    // if (!user?.token) {
-    //   console.error('No authentication token found.');
-    //   Alert.alert('Error', 'User not authenticated.');
-    //   return;
-    // }
+    // Uncomment and implement authentication if needed
+    /*
+    if (!user?.token) {
+      console.error('No authentication token found.');
+      Alert.alert('Error', 'User not authenticated.');
+      return;
+    }
+    */
 
     try {
       const response = await axios.get<UserFinance>(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`,
+        {
+          // headers: {
+          //   Authorization: `Bearer ${user.token}`, // Include the token if required
+          // },
+        }
       );
       setUserFinance(response.data);
       console.log(response.data);
@@ -195,7 +212,6 @@ export default function HomeScreen() {
               setUserFinance(updatedFinance);
               setIsEditAccountModalVisible(false);
               setSelectedAccount(null);
-              
             } catch (err: any) {
               console.error('Error deleting account:', err.message);
               Alert.alert('Error', 'Failed to delete account.');
@@ -267,6 +283,9 @@ export default function HomeScreen() {
     }
   };
 
+  // Function to handle Adding a New Transaction (To be implemented later)
+  // ...
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -285,33 +304,16 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header with Logout Icon */}
-      <Header userName={user.name} onLogout={handleLogout} />
+      {/* Header with Logout Icon and Toggle Tabs */}
+      <Header
+        userName={user.name}
+        onLogout={handleLogout}
+        currentTab={currentTab}
+        onToggleTab={handleToggleTab}
+      />
 
       {/* User Details Card */}
       <View style={styles.card}>
-        {/* User Information */}
-        {/* 
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Email:</Text>
-          <Text style={styles.value}>{user.email}</Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Mobile Number:</Text>
-          <Text style={styles.value}>{user.mobileNumber}</Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Date of Birth:</Text>
-          <Text style={styles.value}>
-            {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'N/A'}
-          </Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Gender:</Text>
-          <Text style={styles.value}>{user.gender || 'N/A'}</Text>
-        </View> 
-        */}
-
         {/* Cash Section */}
         <CashSection
           cashAmount={userFinance.cashAmount}
@@ -374,6 +376,11 @@ export default function HomeScreen() {
           setEditedCreditLimit('');
         }}
       />
+
+      {/* Transaction Card Section - Only in Personal Tab */}
+      {currentTab === 'Personal' && (
+          <TransactionCardSection userId={user._id} limit={5} />
+        )}
     </ScrollView>
   );
 }
