@@ -64,6 +64,6 @@ router.get('/:familyId/members', auth, familyController.getFamilyMembers);
 // @desc    Get familie that a user belongs to
 // @route   GET /api/families/user/:userId
 // @access  Private
-router.get('/user/:userId', authMiddleware, familyController.getFamiliesByUserId);
+router.get('/user/:userId', auth, familyController.getFamiliesByUserId);
 
 module.exports = router;
