@@ -36,6 +36,7 @@ const TransactionCardSection: React.FC<TransactionCardSectionProps> = ({
     setLoading(true);
     setError(null);
     try {
+      console.log(`Requesting !!! ${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${userId}?limit=${limit}`)
       const response = await axios.get<Transaction[]>(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${userId}?limit=${limit}`
       );

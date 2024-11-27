@@ -14,6 +14,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ userName, onLogout, currentTab, onToggleTab }) => {
   return (
     <View style={styles.headerContainer}>
+      {/* Top Row: Welcome Message and Logout Button */}
       <View style={styles.topRow}>
         <Text style={styles.title}>Welcome, {userName}!</Text>
         <TouchableOpacity onPress={onLogout} accessibilityLabel="Logout">
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeToggleButton: {
-    backgroundColor: '#4f4f4f',
+    backgroundColor: '#1d8e3d',
   },
   toggleText: {
     fontSize: 16,

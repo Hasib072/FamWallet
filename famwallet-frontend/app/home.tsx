@@ -8,6 +8,8 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  FlatList,
+  Text,
 } from 'react-native';
 import { AuthContext } from './context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -19,18 +21,21 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 import Header from './components/Header';
 import CashSection from './components/CashSection';
 import AccountSection from './components/AccountSection';
-import TransactionCardSection from './components/TransactionCardSection'; // New import
+import TransactionCardSection from './components/TransactionCardSection'; // Existing import
 import CashEditModal from './components/CashEditModal';
 import AccountEditModal from './components/AccountEditModal';
+import FamilySection from './components/FamilySection'; // Assuming you have this component
 
 // Import Ionicons from @expo/vector-icons
 import { Ionicons } from '@expo/vector-icons';
+import { Transaction } from './types/Transaction'; // Import Transaction type
+import { mapTransactionType } from './utils/transactionUtils'; // Import the mapping function
 
 export default function HomeScreen() {
   const { user, logout, fetchUser, loading } = useContext(AuthContext);
   const router = useRouter();
 
-  // New state for managing the active tab
+  // State for managing the active tab
   const [currentTab, setCurrentTab] = useState<'Personal' | 'Family'>('Personal');
 
   const handleToggleTab = (tab: 'Personal' | 'Family') => {
@@ -57,6 +62,14 @@ export default function HomeScreen() {
   const [editedAccountBalance, setEditedAccountBalance] = useState<string>('');
   const [editedCreditLimit, setEditedCreditLimit] = useState<string>('');
 
+  // State for transactions (Personal)
+  const [personalTransactions, setPersonalTransactions] = useState<Transaction[]>([]);
+  const [personalTransactionsLoading, setPersonalTransactionsLoading] = useState<boolean>(false);
+
+  // State for Family transactions
+  const [familyTransactions, setFamilyTransactions] = useState<Transaction[]>([]);
+  const [familyTransactionsLoading, setFamilyTransactionsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     if (!user && !loading) {
       fetchUser();
@@ -65,15 +78,6 @@ export default function HomeScreen() {
 
   // Function to fetch UserFinance data
   const fetchUserFinance = async () => {
-    // Uncomment and implement authentication if needed
-    /*
-    if (!user?.token) {
-      console.error('No authentication token found.');
-      Alert.alert('Error', 'User not authenticated.');
-      return;
-    }
-    */
-
     try {
       const response = await axios.get<UserFinance>(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`,
@@ -84,7 +88,7 @@ export default function HomeScreen() {
         }
       );
       setUserFinance(response.data);
-      console.log(response.data);
+      console.log('User Finance Data:', response.data);
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
         // UserFinance does not exist, initialize with default values
@@ -103,13 +107,51 @@ export default function HomeScreen() {
     }
   };
 
+  // Function to fetch Personal Transactions
+  const fetchPersonalTransactions = async () => {
+    setPersonalTransactionsLoading(true);
+    try {
+
+      const response = await axios.get<Transaction[]>(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/user/${user?._id}`
+      );      
+      setPersonalTransactions(response.data);
+    } catch (err: any) {
+      console.log('!Error fetching personal transactions:', err.message);
+      Alert.alert('Error', 'Failed to fetch personal transactions!');
+    } finally {
+      setPersonalTransactionsLoading(false);
+    }
+  };
+
+  // Function to fetch Family Transactions
+  const fetchFamilyTransactions = async (familyId: string) => {
+    setFamilyTransactionsLoading(true);
+    try {
+      const response = await axios.get<Transaction[]>(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/transactions/family/${familyId}`
+      );
+      setFamilyTransactions(response.data);
+      console.log('Family Transactions:', response.data);
+    } catch (err: any) {
+      console.log('Error fetching family transactions:', err.message);
+      Alert.alert('Error', 'Failed to fetch family transactions.');
+    } finally {
+      setFamilyTransactionsLoading(false);
+    }
+  };
+
   // Use useFocusEffect to fetch data when the screen is focused
   useFocusEffect(
     useCallback(() => {
       if (user && !loading) {
         fetchUserFinance();
+        if (currentTab === 'Personal') {
+          fetchPersonalTransactions();
+        }
+        // Family transactions will be fetched within FamilySection component
       }
-    }, [user, loading])
+    }, [user, loading, currentTab])
   );
 
   const handleLogout = () => {
@@ -287,9 +329,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Function to handle Adding a New Transaction (To be implemented later)
-  // ...
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -317,44 +356,54 @@ export default function HomeScreen() {
           onToggleTab={handleToggleTab}
         />
 
-        {/* User Details Card */}
-        <View style={styles.card}>
-          {/* Cash Section */}
-          <CashSection
-            cashAmount={userFinance.cashAmount}
-            onPress={() => {
-              setNewCashAmount(userFinance.cashAmount.toString());
-              setIsCashModalVisible(true);
-            }}
-          />
+        {/* Render based on currentTab */}
+        {currentTab === 'Personal' ? (
+          <View style={styles.card}>
+            {/* Cash Section */}
+            <CashSection
+              cashAmount={userFinance.cashAmount}
+              onPress={() => {
+                setNewCashAmount(userFinance.cashAmount.toString());
+                setIsCashModalVisible(true);
+              }}
+            />
 
-          {/* Bank Accounts Section */}
-          <AccountSection
-            title="Bank Accounts"
-            accounts={userFinance.bankAccounts}
-            onAdd={() => router.push('/addBankAccount')}
-            onEdit={(type, index) => {
-              setSelectedAccount({ type, index });
-              setEditedAccountBalance(userFinance.bankAccounts[index].balance.toString());
-              setIsEditAccountModalVisible(true);
-            }}
-            type="bank"
-          />
+            {/* Bank Accounts Section */}
+            <AccountSection
+              title="Bank Accounts"
+              accounts={userFinance.bankAccounts}
+              onAdd={() => router.push('/addBankAccount')}
+              onEdit={(type, index) => {
+                setSelectedAccount({ type, index });
+                setEditedAccountBalance(userFinance.bankAccounts[index].balance.toString());
+                setIsEditAccountModalVisible(true);
+              }}
+              type="bank"
+            />
 
-          {/* Credit Cards Section */}
-          <AccountSection
-            title="Credit Cards"
-            accounts={userFinance.creditCards}
-            onAdd={() => router.push('/addCreditCard')}
-            onEdit={(type, index) => {
-              setSelectedAccount({ type, index });
-              setEditedAccountBalance(userFinance.creditCards[index].balance.toString());
-              setEditedCreditLimit(userFinance.creditCards[index].limit.toString());
-              setIsEditAccountModalVisible(true);
-            }}
-            type="credit"
+            {/* Credit Cards Section */}
+            <AccountSection
+              title="Credit Cards"
+              accounts={userFinance.creditCards}
+              onAdd={() => router.push('/addCreditCard')}
+              onEdit={(type, index) => {
+                setSelectedAccount({ type, index });
+                setEditedAccountBalance(userFinance.creditCards[index].balance.toString());
+                setEditedCreditLimit(userFinance.creditCards[index].limit.toString());
+                setIsEditAccountModalVisible(true);
+              }}
+              type="credit"
+            />
+          </View>
+        ) : (
+          // Family Section
+          <FamilySection
+            userId={user._id}
+            transactions={familyTransactions}
+            transactionsLoading={familyTransactionsLoading}
+            fetchTransactions={fetchFamilyTransactions}
           />
-        </View>
+        )}
 
         {/* Transaction Card Section - Only in Personal Tab */}
         {currentTab === 'Personal' && (
@@ -363,13 +412,15 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Floating Add Button */}
-      <TouchableOpacity
-        style={styles.floatingButton}
-        onPress={() => router.push('/addtransaction')}
-        accessibilityLabel="Add Transaction"
-      >
-        <Ionicons name="add-circle" size={60} color="#1d8e3d" />
-      </TouchableOpacity>
+      {currentTab === 'Personal' && (
+        <TouchableOpacity
+          style={styles.floatingButton}
+          onPress={() => router.push('/addtransaction')}
+          accessibilityLabel="Add Transaction"
+        >
+          <Ionicons name="add-circle" size={60} color="#1d8e3d" />
+        </TouchableOpacity>
+      )}
 
       {/* Cash Edit Modal */}
       <CashEditModal
@@ -434,4 +485,5 @@ const styles = StyleSheet.create({
     // Optional: Add elevation for Android
     elevation: 5,
   },
+  // Transaction Styles (if any)
 });
