@@ -1,3 +1,211 @@
+# FamWallet - Family Expense Insights
+
+FamWallet is a comprehensive solution designed to help families manage and analyze their financial data efficiently. The project includes both a backend API and a mobile frontend application, focusing on family-level and member-level expense analysis.
+
+
+### **Download Apk: [https://expo.dev/accounts/ha51b72/projects/famwallet-frontend/builds/52bdb5dc-4d5a-4e1b-baf4-8201b0397745](https://expo.dev/accounts/ha51b72/projects/famwallet-frontend/builds/52bdb5dc-4d5a-4e1b-baf4-8201b0397745)**
+
+**Github link: [https://github.com/Hasib072/FamWallet](https://github.com/Hasib072/FamWallet)**
+**Backend link: [https://famwallet.onrender.com](https://famwallet.onrender.com)**
+
+
+## Features
+
+-   Member Contribution Analysis: Calculate each family member's contribution to total expenses and identify the highest spender.
+    
+-   Savings Optimization: Suggest savings percentages based on income, expenses, and dependents, and determine if a family is overspending or underspending relative to an ideal expense-to-income ratio.
+    
+-   Transaction Management: Add and store transactions with details like category, amount, date, and mode of payment.
+    
+-   Family Management: Create family groups and manage members within the family.
+    
+-   User Authentication: Secure user registration and login with JWT authentication.
+
+## Backend Overview
+
+The backend is built with Node.js and Express, utilizing MongoDB for data storage. It provides a RESTful API for the frontend to interact with, handling user authentication, transaction management, and financial analytics.
+
+### Deployed Backend
+
+The backend is deployed at: [https://famwallet.onrender.com](https://famwallet.onrender.com)
+
+### Technologies Used
+
+-   Node.js
+-   Express.js
+-   MongoDB & Mongoose
+-   JWT Authentication
+
+## Frontend Overview
+
+The frontend is a mobile application built with React Native and Expo Go. It provides a user-friendly interface for users to view their financial dashboards and manage transactions.
+
+### Technologies Used
+
+-   React Native
+-   Expo Go
+
+## Project Structure
+
+The project is structured as follows:
+
+```
+FamWallet/
+├── .env                # Backend environment variables (ignored in version control)
+├── .gitignore
+├── app.js              # Entry point for the backend server
+├── config/
+│   └── db.js           # Database configuration
+├── controllers/
+│   ├── analyticsController.js
+│   ├── authController.js
+│   ├── familyController.js
+│   ├── transactionController.js
+│   ├── userController.js
+│   └── userFinanceController.js
+├── famwallet-frontend/ # Frontend application directory
+│   ├── .env            # Frontend environment variables (ignored in version control)
+│   ├── .gitignore
+│   ├── app/
+│   │   ├── addBankAccount.tsx
+│   │   ├── addCreditCard.tsx
+│   │   ├── addtransaction.tsx
+│   │   ├── components/
+│   │   │   ├── AccountCard.tsx
+│   │   │   ├── AccountEditModal.tsx
+│   │   │   ├── AccountSection.tsx
+│   │   │   ├── CashEditModal.tsx
+│   │   │   ├── CashSection.tsx
+│   │   │   ├── CreateFamily.tsx
+│   │   │   ├── FamilySection.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── SplashScreen.tsx
+│   │   │   └── TransactionCardSection.tsx
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx
+│   │   ├── home.tsx
+│   │   ├── index.tsx
+│   │   ├── login.tsx
+│   │   ├── mytransactions.tsx
+│   │   ├── signup.tsx
+│   │   ├── types/
+│   │   │   ├── FamilySection.ts
+│   │   │   ├── navigation.d.ts
+│   │   │   ├── Transaction.ts
+│   │   │   ├── TransactionCardSection.ts
+│   │   │   ├── User.ts
+│   │   │   └── UserFinance.ts
+│   │   ├── utils/
+│   │   │   └── transactionUtils.ts
+│   │   └── _layout.tsx
+│   ├── app.json
+│   ├── assets/
+│   │   ├── fonts/
+│   │   │   └── SpaceMono-Regular.ttf
+│   │   └── images/
+│   │       ├── adaptive-icon.png
+│   │       ├── favicon.png
+│   │       ├── icon.png
+│   │       ├── splash-icon.png
+│   ├── eas.json
+│   ├── package.json
+│   └── tsconfig.json
+├── middleware/
+│   ├── auth.js
+│   └── role.js
+├── models/
+│   ├── Dependent.js
+│   ├── Family.js
+│   ├── Transaction.js
+│   ├── User.js
+│   └── UserFinance.js
+├── package.json
+├── README.md           # Project documentation (you're reading this!)
+└── routes/
+    ├── analyticsRoutes.js
+    ├── api.js
+    ├── familyRoutes.js
+    ├── transactionRoutes.js
+    ├── userFinanceRoutes.js
+    └── userRoutes.js
+
+```
+
+## Getting Started
+
+### Requirements
+
+-   **Backend Requirements:**
+    
+    -   Node.js (version 14 or higher)
+    -   MongoDB database (local or cloud instance)
+    -   npm (Node Package Manager)
+-   **Frontend Requirements:**
+    
+    -   Node.js
+    -   Expo CLI (`npm install -g expo-cli`)
+    -   Expo Go app installed on your mobile device (available on App Store and Google Play)
+
+### Backend Setup
+
+1.  **Clone the Repository**
+```
+git clone https://github.com/Hasib072/FamWallet.git
+cd FamWallet
+```
+2. **Install Dependencies**
+```
+npm install
+```
+3. **Configure Environment Variables**
+
+Create a `.env` file in the root directory with the following variables:
+```
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+```
+4. **Run the Server**
+```
+npm run dev
+```
+
+### Frontend Setup
+-   **Navigate to the Frontend Directory**
+    
+    bash
+    
+    Copy code
+```
+ cd famwallet-frontend
+```
+
+    
+-   **Install Dependencies**
+    
+  ```
+ npm install
+```
+    
+-   **Configure Environment Variables**
+    
+    Create a `.env` file in the frontend directory with the following variable:
+```
+    EXPO_PUBLIC_BACKEND_URL=https://famwallet.onrender.com
+```
+   -   If you're running the backend locally, set `EXPO_PUBLIC_BACKEND_URL` to `http://localhost:5000`.
+    
+-   **Run the App**
+    ```
+    expo start
+    ```
+    
+-   **Test on Device**
+    
+    -   Install the **Expo Go** app on your mobile device.
+    -   Scan the QR code displayed in the terminal or browser after running `expo start`.
+
+
 ## BACKEND
 
 ### 📄 API Documentation
