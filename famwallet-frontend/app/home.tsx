@@ -1,26 +1,30 @@
+// app/home.tsx
+
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  TouchableOpacity,
   Alert,
-  Modal,
-  TextInput,
-  Button,
 } from 'react-native';
 import { AuthContext } from './context/AuthContext';
 import { useRouter } from 'expo-router';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { UserFinance } from './types/UserFinance'; // Import the interface
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
- 
+
+// Importing Components
+import Header from './components/Header';
+import CashSection from './components/CashSection';
+import AccountSection from './components/AccountSection';
+import CashEditModal from './components/CashEditModal';
+import AccountEditModal from './components/AccountEditModal';
+
 export default function HomeScreen() {
   const { user, logout, fetchUser, loading } = useContext(AuthContext);
   const router = useRouter();
+
 
   // Initialize userFinance with default values
   const [userFinance, setUserFinance] = useState<UserFinance>({
@@ -28,6 +32,8 @@ export default function HomeScreen() {
     bankAccounts: [],
     cashAmount: 0,
     creditCards: [],
+    savingGoals: [],
+    loans: [],
   });
 
   // State for handling modals
@@ -46,13 +52,18 @@ export default function HomeScreen() {
 
   // Function to fetch UserFinance data
   const fetchUserFinance = async () => {
+    // if (!user?.token) {
+    //   console.error('No authentication token found.');
+    //   Alert.alert('Error', 'User not authenticated.');
+    //   return;
+    // }
+
     try {
       const response = await axios.get<UserFinance>(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`
       );
       setUserFinance(response.data);
       console.log(response.data);
-      
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
         // UserFinance does not exist, initialize with default values
@@ -61,9 +72,11 @@ export default function HomeScreen() {
           bankAccounts: [],
           cashAmount: 0,
           creditCards: [],
+          savingGoals: [],
+          loans: [],
         });
       } else {
-        console.error('Error fetching user finance:', err.message);
+        console.log('Error fetching user finance:', err.message);
         Alert.alert('Error', 'Failed to fetch financial details.');
       }
     }
@@ -98,7 +111,11 @@ export default function HomeScreen() {
         cashAmount: parsedAmount,
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setUserFinance(updatedFinance);
       setIsCashModalVisible(false);
       // No success alert as per your request
@@ -142,7 +159,11 @@ export default function HomeScreen() {
         }
       }
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setUserFinance(updatedFinance);
       setIsEditAccountModalVisible(false);
       setSelectedAccount(null);
@@ -178,7 +199,11 @@ export default function HomeScreen() {
                 updatedFinance.creditCards.splice(index, 1);
               }
 
-              await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
+              await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                },
+              });
               setUserFinance(updatedFinance);
               setIsEditAccountModalVisible(false);
               setSelectedAccount(null);
@@ -212,7 +237,11 @@ export default function HomeScreen() {
         bankAccounts: [...userFinance.bankAccounts, { name, balance }],
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setUserFinance(updatedFinance);
       // Fetch the updated data again
       await fetchUserFinance();
@@ -242,7 +271,11 @@ export default function HomeScreen() {
         creditCards: [...userFinance.creditCards, { name, limit, balance }],
       };
 
-      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance);
+      await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/finance`, updatedFinance, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setUserFinance(updatedFinance);
       // Fetch the updated data again
       await fetchUserFinance();
@@ -273,12 +306,7 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header with Logout Icon */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome, {user.name}!</Text>
-        <TouchableOpacity onPress={handleLogout} accessibilityLabel="Logout">
-          <Feather name="log-out" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+      <Header userName={user.name} onLogout={handleLogout} />
 
       {/* User Details Card */}
       <View style={styles.card}>
@@ -305,174 +333,67 @@ export default function HomeScreen() {
         */}
 
         {/* Cash Section */}
-        <TouchableOpacity
-          style={[styles.section, styles.fullWidthSection]}
+        <CashSection
+          cashAmount={userFinance.cashAmount}
           onPress={() => {
             setNewCashAmount(userFinance.cashAmount.toString());
             setIsCashModalVisible(true);
           }}
-        >
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Cash</Text>
-          </View>
-          <View style={styles.fullWidthRow}>
-            <View style={styles.fullWidthCard}>
-              <Text style={styles.cashAccountBalance}>₹{userFinance.cashAmount.toFixed(2)}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+        />
 
         {/* Bank Accounts Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Bank Accounts</Text>
-            <TouchableOpacity
-              onPress={() => {
-                // Navigate to Add Bank Account screen
-                router.push('/addBankAccount');
-              }}
-              accessibilityLabel="Add Bank Account"
-            >
-              <MaterialIcons name="add-circle-outline" size={24} color="gray" />
-            </TouchableOpacity>
-          </View>
-          {userFinance.bankAccounts.length > 0 ? (
-            <View style={styles.accountsRow}>
-              {userFinance.bankAccounts.map((account, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.accountCard}
-                  onPress={() => {
-                    setSelectedAccount({ type: 'bank', index });
-                    setEditedAccountBalance(account.balance.toString());
-                    setIsEditAccountModalVisible(true);
-                  }}
-                  accessibilityLabel={`Edit ${account.name}`}
-                >
-                  <Text style={styles.accountName}>{account.name}</Text>
-                  <Text style={styles.accountBalance}>₹{account.balance.toFixed(2)}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noAccountsText}>No bank accounts added.</Text>
-          )}
-        </View>
+        <AccountSection
+          title="Bank Accounts"
+          accounts={userFinance.bankAccounts}
+          onAdd={() => router.push('/addBankAccount')}
+          onEdit={(type, index) => {
+            setSelectedAccount({ type, index });
+            setEditedAccountBalance(userFinance.bankAccounts[index].balance.toString());
+            setIsEditAccountModalVisible(true);
+          }}
+          type="bank"
+        />
 
         {/* Credit Cards Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Credit Cards</Text>
-            <TouchableOpacity
-              onPress={() => {
-                // Navigate to Add Credit Card screen
-                router.push('/addCreditCard');
-              }}
-              accessibilityLabel="Add Credit Card"
-            >
-              <MaterialIcons name="add-circle-outline" size={24} color="gray" />
-            </TouchableOpacity>
-          </View>
-          {userFinance.creditCards.length > 0 ? (
-            <View style={styles.accountsRow}>
-              {userFinance.creditCards.map((card, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.accountCard}
-                  onPress={() => {
-                    setSelectedAccount({ type: 'credit', index });
-                    setEditedAccountBalance(card.balance.toString());
-                    setEditedCreditLimit(card.limit.toString());
-                    setIsEditAccountModalVisible(true);
-                  }}
-                  accessibilityLabel={`Edit ${card.name}`}
-                >
-                  <Text style={styles.accountName}>{card.name}</Text>
-                  <Text style={styles.negetiveAccountBalance}>₹{card.balance.toFixed(2)}</Text>
-                  {/* <Text style={styles.accountLimit}>Limit: ₹{card.limit.toFixed(2)}</Text> */}
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noAccountsText}>No credit cards added.</Text>
-          )}
-        </View>
+        <AccountSection
+          title="Credit Cards"
+          accounts={userFinance.creditCards}
+          onAdd={() => router.push('/addCreditCard')}
+          onEdit={(type, index) => {
+            setSelectedAccount({ type, index });
+            setEditedAccountBalance(userFinance.creditCards[index].balance.toString());
+            setEditedCreditLimit(userFinance.creditCards[index].limit.toString());
+            setIsEditAccountModalVisible(true);
+          }}
+          type="credit"
+        />
       </View>
 
       {/* Cash Edit Modal */}
-      <Modal
+      <CashEditModal
         visible={isCashModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setIsCashModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Edit Cash Amount</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Enter new cash amount"
-              keyboardType="numeric"
-              value={newCashAmount}
-              onChangeText={setNewCashAmount}
-            />
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setIsCashModalVisible(false)} />
-              <Button title="Save" onPress={handleSaveCash} />
-            </View>
-          </View>
-        </View>
-      </Modal>
+        cashAmount={newCashAmount}
+        onChangeAmount={setNewCashAmount}
+        onSave={handleSaveCash}
+        onCancel={() => setIsCashModalVisible(false)}
+      />
 
       {/* Account Edit Modal */}
-      <Modal
+      <AccountEditModal
         visible={isEditAccountModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => {
+        accountType={selectedAccount?.type || null}
+        balance={editedAccountBalance}
+        creditLimit={editedCreditLimit}
+        onChangeBalance={setEditedAccountBalance}
+        onChangeCreditLimit={setEditedCreditLimit}
+        onSave={handleSaveAccount}
+        onDelete={handleDeleteAccount}
+        onCancel={() => {
           setIsEditAccountModalVisible(false);
           setSelectedAccount(null);
           setEditedCreditLimit('');
         }}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Edit {selectedAccount?.type === 'bank' ? 'Bank Account' : 'Credit Card'} Details</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Enter new balance"
-              keyboardType="numeric"
-              value={editedAccountBalance}
-              onChangeText={setEditedAccountBalance}
-            />
-            {selectedAccount?.type === 'credit' && (
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter new credit limit"
-                keyboardType="numeric"
-                value={editedCreditLimit}
-                onChangeText={setEditedCreditLimit}
-              />
-            )}
-            <View style={styles.modalButtons}>
-              <Button
-                title="Delete"
-                color="red"
-                onPress={handleDeleteAccount}
-              />
-              <Button
-                title="Cancel"
-                onPress={() => {
-                  setIsEditAccountModalVisible(false);
-                  setSelectedAccount(null);
-                  setEditedCreditLimit('');
-                }}
-              />
-              <Button title="Save" onPress={handleSaveAccount} />
-            </View>
-          </View>
-        </View>
-      </Modal>
+      />
     </ScrollView>
   );
 }
@@ -488,16 +409,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -507,137 +418,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // For iOS shadow
     shadowOpacity: 0.1, // For iOS shadow
     shadowRadius: 5, // For iOS shadow
-  },
-  userInfo: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    width: 120,
-    color: '#333',
-  },
-  value: {
-    flex: 1,
-    color: '#555',
-  },
-  section: {
-    marginTop: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  accountsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  accountCard: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 15,
-    width: '48%', // Two cards per row with some spacing
-    elevation: 1, // For Android shadow
-    shadowColor: '#000', // For iOS shadow
-    shadowOffset: { width: 0, height: 1 }, // For iOS shadow
-    shadowOpacity: 0.05, // For iOS shadow
-    shadowRadius: 3, // For iOS shadow
-  },
-  accountType: {
-    fontSize: 14,
-    color: '#888',
-  },
-  accountName: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginVertical: 5,
-    color: '#333',
-  },
-  cashAccountBalance: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginVertical: 5,
-    color: '#1d8e3d',
-  },
-  accountBalance: {
-    fontSize: 14,
-    color: '#1d8e3d',
-  },
-  negetiveAccountBalance: {
-    fontSize: 14,
-    color: '#f53f5b',
-  },
-  accountLimit: {
-    fontSize: 14,
-    color: '#555',
-  },
-  addAccountButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
-  },
-  noAccountsText: {
-    fontSize: 14,
-    color: '#888',
-    fontStyle: 'italic',
-    textAlign: 'center',
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  // New styles for full-width Cash section
-  fullWidthSection: {
-    width: '100%',
-  },
-  fullWidthRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  fullWidthCard: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 15,
-    width: '100%', // Occupy full width
-    elevation: 1, // For Android shadow
-    shadowColor: '#000', // For iOS shadow
-    shadowOffset: { width: 0, height: 1 }, // For iOS shadow
-    shadowOpacity: 0.05, // For iOS shadow
-    shadowRadius: 3, // For iOS shadow
-    alignItems: 'center', // Center the text
   },
 });

@@ -57,7 +57,7 @@ const AddBankAccount = () => {
         updatedFinance
       );
 
-      Alert.alert('Success', 'Bank account added successfully.');
+      // Alert.alert('Success', 'Bank account added successfully.');
       fetchUserFinance(); // Refresh the data in AuthContext if needed
       router.back();
     } catch (err: any) {
@@ -97,8 +97,9 @@ const AddBankAccount = () => {
         onChangeText={setBalance}
         keyboardType="numeric"
       />
-
-      <Button title="Add Bank Account" onPress={handleAddBankAccount} />
+      <View style={styles.addButton}>
+        <Button title="Add Bank Account" onPress={handleAddBankAccount}/>
+      </View>
     </View>
   );
 };
@@ -120,6 +121,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginTop: 5,
+  },
+  addButton: {
+    marginTop: 25,
   },
 });
 

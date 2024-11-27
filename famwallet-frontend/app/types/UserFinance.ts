@@ -16,5 +16,25 @@ export interface BankAccount {
     bankAccounts: BankAccount[];
     cashAmount: number;
     creditCards: CreditCard[];
+    savingGoals: savingGoals[];
+    loans: Loans[];
   }
+
+  export interface savingGoals {
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    deadline: string;
+  }
+
+  export interface Loans {
+    name: string;
+    principalAmount: number;
+    interestRate: number;
+    monthlyPayment: number;
+    remainingBalance: number;
+  }
+
+  
+  
   

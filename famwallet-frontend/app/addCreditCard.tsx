@@ -65,7 +65,7 @@ const AddCreditCard = () => {
         updatedFinance
       );
 
-      Alert.alert('Success', 'Credit card added successfully.');
+      //Alert.alert('Success', 'Credit card added successfully.');
       fetchUserFinance(); // Refresh the data in AuthContext if needed
       router.back();
     } catch (err: any) {
@@ -114,8 +114,9 @@ const AddCreditCard = () => {
         onChangeText={setBalance}
         keyboardType="numeric"
       />
-
-      <Button title="Add Credit Card" onPress={handleAddCreditCard} />
+      <View style={styles.addButton}>
+        <Button title="Add Credit Card" onPress={handleAddCreditCard} />
+      </View>
     </View>
   );
 };
@@ -137,6 +138,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginTop: 5,
+  },
+  addButton: {
+    marginTop: 25,
   },
 });
 
